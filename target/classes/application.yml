@@ -12,7 +12,12 @@ spring:
       org.hibernate: WARN
   data:
     elasticsearch:
-      cluster-name: "docker-cluster"
+      cluster-name: docker-cluster
+      cluster-nodes: 0.0.0.0:9300
+
+  elasticsearch:
+    rest:
+      uris: https://search-search-test-bucmbzybhlmqfexpwwa76odnra.us-east-1.es.amazonaws.com/:9200
 
 initial-import:
   enabled: true
