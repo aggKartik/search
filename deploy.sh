@@ -39,16 +39,19 @@ deploy_cluster() {
     return 1
 }
 
+role_arn = $(aws ecs update-service --cluster search-cluster --service search-service | $JQ '.service.roleArn')
+
 make_task_def(){
 	task_template='[
 		{
 			"name": "search",
 			"image": "%s.dkr.ecr.us-east-1.amazonaws.com/search:%s",
 			"essential": true,
-			"memory": 200,
+			"memory": 1024,
 			"cpu": 10,
-            "compatibilities" : ["FARGATE"],
+            "compatibilities" : ["EC2", "FARGATE"],
             "requiresCompatibilities" : ["FARGATE"],
+            "entryPoint": null,
 			"portMappings": [
 				{
 					"containerPort": 80,
@@ -68,7 +71,7 @@ push_ecr_image(){
 
 register_definition() {
 
-    if revision=$(aws ecs register-task-definition --container-definitions "$task_def" --family $family | $JQ '.taskDefinition.taskDefinitionArn'); then
+    if revision=$(aws ecs register-task-definition --container-definitions "$task_def" --family $family | $JQ '.taskDefinition.taskDefinitionArn' --task-role-arn $role_arn); then
         echo "Revision: $revision"
     else
         echo "Failed to register task definition"
